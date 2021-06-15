@@ -20,11 +20,12 @@ class OperationItem extends StatelessWidget {
   final double? size;
   final void Function()? onTap;
 
-  OperationItem({Key? key,
-    required this.iconData,
-    this.color = const Color(0xffcccccc),
-    this.size,
-    this.onTap})
+  OperationItem(
+      {Key? key,
+      required this.iconData,
+      this.color = const Color(0xffcccccc),
+      this.size,
+      this.onTap})
       : super(key: key);
 
   @override
@@ -68,49 +69,66 @@ class AboveControlBar extends StatelessWidget {
               });
         }
       }),
-      FutureBuilder(
-          future: AudioUtil.getDownloadAudioPath(mediaItem),
-          builder: (context, snapshot) {
-            Widget downloadIcon = OperationItem(
-                iconData: Icons.save_alt_rounded, onTap: () {
-              API.downloadAudio(mediaItem);
+      StatefulBuilder(builder: (BuildContext ctx, StateSetter setState) {
+        return FutureBuilder(
+            future: AudioUtil.getDownloadAudioPath(mediaItem),
+            builder: (context, snapshot) {
+              Widget downloadIcon = OperationItem(
+                  iconData: Icons.save_alt_rounded,
+                  onTap: () async{
+                    await API.downloadAudio(mediaItem);
+                    setState(() => null);
+                  });
+              Widget doneIcon = OperationItem(
+                iconData: Icons.download_done_rounded,
+                onTap: () {
+                  Fluttertoast.showToast(msg: '已经下载过啦😊');
+                },
+              );
+              if (snapshot.data != null) {
+                return doneIcon;
+              }
+              return downloadIcon;
             });
-            Widget doneIcon = OperationItem(iconData: Icons.download_done_rounded, onTap: (){
-              Fluttertoast.showToast(msg: '已经下载过啦😊');
-            },);
-            if (snapshot.data != null) {
-              return doneIcon;
-            }
-            return downloadIcon;
-          }
-      ),
+      }),
 //      OperationItem(iconData: Icons.notifications, onTap: () {
 //      }), // 外部app打开
-      OperationItem(iconData: Icons.more_vert, onTap: () {
-        Modal.showModalWithMediaHeader(
-            context, mediaItem: mediaItem, modalItems: [
-          ModalItem(leading: Icons.music_note,
-              content: sprintf('名称： %s', [mediaItem.title]),
-              onTap: () {
-                CommonUtil.copyToClipboard(mediaItem.title);
-              }),
-          ModalItem(leading: Icons.person,
-              content: sprintf('歌手： %s', [mediaItem.artist]),
-              onTap: () {
-                CommonUtil.copyToClipboard(mediaItem.artist);
-              }),
-          ModalItem(leading: Icons.album,
-              content: sprintf('专辑： %s', [mediaItem.album]),
-              onTap: () {
-                CommonUtil.copyToClipboard(mediaItem.album);
-              }),
-          ModalItem(leading: Icons.link,
-              content: sprintf('来源： %s', [mediaItem.genre])),
-          ModalItem(leading: Icons.add_to_photos, content: '添加到歌单', onTap: () {
-            Modal.showAddToModal(context, [mediaItem]);
-          })
-        ]);
-      },)
+      OperationItem(
+        iconData: Icons.more_vert,
+        onTap: () {
+          Modal.showModalWithMediaHeader(context,
+              mediaItem: mediaItem,
+              modalItems: [
+                ModalItem(
+                    leading: Icons.music_note,
+                    content: sprintf('名称： %s', [mediaItem.title]),
+                    onTap: () {
+                      CommonUtil.copyToClipboard(mediaItem.title);
+                    }),
+                ModalItem(
+                    leading: Icons.person,
+                    content: sprintf('歌手： %s', [mediaItem.artist]),
+                    onTap: () {
+                      CommonUtil.copyToClipboard(mediaItem.artist);
+                    }),
+                ModalItem(
+                    leading: Icons.album,
+                    content: sprintf('专辑： %s', [mediaItem.album]),
+                    onTap: () {
+                      CommonUtil.copyToClipboard(mediaItem.album);
+                    }),
+                ModalItem(
+                    leading: Icons.link,
+                    content: sprintf('来源： %s', [mediaItem.genre])),
+                ModalItem(
+                    leading: Icons.add_to_photos,
+                    content: '添加到歌单',
+                    onTap: () {
+                      Modal.showAddToModal(context, [mediaItem]);
+                    })
+              ]);
+        },
+      )
     ]);
   }
 }
@@ -128,41 +146,39 @@ class SlideBar extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 24.rpx),
         child: StatefulBuilder(
             builder: (BuildContext context, StateSetter setState) {
-              return MediaPositionBuilder(builder: (context, position) {
-                return Row(children: [
-                  Text(
-                      (newProgress != null
+          return MediaPositionBuilder(builder: (context, position) {
+            return Row(children: [
+              Text(
+                  (newProgress != null
                           ? Duration(seconds: newProgress!.toInt())
                           : position)
-                          .toString()
-                          .split('.')[0],
-                      style: TextStyle(
-                          color: Color(0xffcccccc), fontSize: 20.rpx)),
-                  Expanded(child: Slider(
-                    value: newProgress ?? position.inSeconds.toDouble(),
-                    max: mediaItem.duration?.inSeconds.toDouble() ?? 1.0,
-                    onChanged: (double value) {
-                      setState(() => newProgress = value);
-                    },
-                    onChangeEnd: (double value) async {
-                      await AudioService.seekTo(
-                          Duration(seconds: value.toInt()));
-                      setState(() {
-                        newProgress = null;
-                      });
-                    },
-                    activeColor: Color(0xffcccccc),
-                    inactiveColor: Color(0xff999999),
-                    semanticFormatterCallback: (value) {
-                      return Duration(seconds: value.toInt()).toString();
-                    },
-                  )),
-                  Text(mediaItem.duration.toString().split('.')[0],
-                      style: TextStyle(
-                          color: Color(0xffcccccc), fontSize: 20.rpx))
-                ]);
-              });
-            }));
+                      .toString()
+                      .split('.')[0],
+                  style: TextStyle(color: Color(0xffcccccc), fontSize: 20.rpx)),
+              Expanded(
+                  child: Slider(
+                value: newProgress ?? position.inSeconds.toDouble(),
+                max: mediaItem.duration?.inSeconds.toDouble() ?? 1.0,
+                onChanged: (double value) {
+                  setState(() => newProgress = value);
+                },
+                onChangeEnd: (double value) async {
+                  await AudioService.seekTo(Duration(seconds: value.toInt()));
+                  setState(() {
+                    newProgress = null;
+                  });
+                },
+                activeColor: Color(0xffcccccc),
+                inactiveColor: Color(0xff999999),
+                semanticFormatterCallback: (value) {
+                  return Duration(seconds: value.toInt()).toString();
+                },
+              )),
+              Text(mediaItem.duration.toString().split('.')[0],
+                  style: TextStyle(color: Color(0xffcccccc), fontSize: 20.rpx))
+            ]);
+          });
+        }));
   }
 }
 
@@ -172,70 +188,70 @@ class BottomControlBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return PlaybackStateBuilder(
         builder: (BuildContext context, PlaybackState? playbackState) {
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              // 播放模式
-              playbackState?.repeatMode == AudioServiceRepeatMode.one
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          // 播放模式
+          playbackState?.repeatMode == AudioServiceRepeatMode.one
+              ? OperationItem(
+                  iconData: Icons.loop_rounded,
+                  onTap: () async {
+                    await AudioService.setRepeatMode(
+                        AudioServiceRepeatMode.none);
+                  },
+                )
+              : (playbackState?.shuffleMode == AudioServiceShuffleMode.all
                   ? OperationItem(
-                iconData: Icons.loop_rounded,
-                onTap: () async {
-                  await AudioService.setRepeatMode(
-                      AudioServiceRepeatMode.none);
-                },
-              )
-                  : (playbackState?.shuffleMode == AudioServiceShuffleMode.all
-                  ? OperationItem(
-                iconData: Icons.shuffle_rounded,
-                onTap: () async {
-                  await AudioService.setRepeatMode(
-                      AudioServiceRepeatMode.one);
-                },
-              )
+                      iconData: Icons.shuffle_rounded,
+                      onTap: () async {
+                        await AudioService.setRepeatMode(
+                            AudioServiceRepeatMode.one);
+                      },
+                    )
                   : OperationItem(
-                iconData: Icons.repeat_rounded,
-                onTap: () async {
-                  await AudioService.setShuffleMode(
-                      AudioServiceShuffleMode.all);
-                },
-              )),
-              // 上一首歌
-              OperationItem(
-                iconData: Icons.skip_previous_rounded,
-                onTap: () {
-                  AudioService.skipToPrevious();
-                },
-              ),
-              (playbackState?.playing ?? false)
-                  ? OperationItem(
-                iconData: Icons.pause_circle_outline,
-                size: 96.rpx,
-                onTap: () {
-                  AudioService.pause();
-                },
-              )
-                  : OperationItem(
-                iconData: Icons.play_circle_outline,
-                size: 96.rpx,
-                onTap: () {
-                  AudioService.play();
-                },
-              ),
-              // 下一首歌
-              OperationItem(
-                iconData: Icons.skip_next_rounded,
-                onTap: () {
-                  AudioService.skipToNext();
-                },
-              ),
-              OperationItem(
-                  iconData: Icons.playlist_play_outlined,
+                      iconData: Icons.repeat_rounded,
+                      onTap: () async {
+                        await AudioService.setShuffleMode(
+                            AudioServiceShuffleMode.all);
+                      },
+                    )),
+          // 上一首歌
+          OperationItem(
+            iconData: Icons.skip_previous_rounded,
+            onTap: () {
+              AudioService.skipToPrevious();
+            },
+          ),
+          (playbackState?.playing ?? false)
+              ? OperationItem(
+                  iconData: Icons.pause_circle_outline,
+                  size: 96.rpx,
                   onTap: () {
-                    Modal.showPlayQueue(context);
-                  })
-            ],
-          );
-        });
+                    AudioService.pause();
+                  },
+                )
+              : OperationItem(
+                  iconData: Icons.play_circle_outline,
+                  size: 96.rpx,
+                  onTap: () {
+                    AudioService.play();
+                  },
+                ),
+          // 下一首歌
+          OperationItem(
+            iconData: Icons.skip_next_rounded,
+            onTap: () {
+              AudioService.skipToNext();
+            },
+          ),
+          OperationItem(
+              iconData: Icons.playlist_play_outlined,
+              onTap: () {
+                Modal.showPlayQueue(context);
+              })
+        ],
+      );
+    });
   }
 }
 

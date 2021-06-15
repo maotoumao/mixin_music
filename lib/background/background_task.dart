@@ -65,12 +65,7 @@ class AudioPlayerTask extends BackgroundAudioTask {
     }
     final data = queue[index];
     Duration? realDuration;
-
-    print('getResource');
     MediaResource mediaResource = await API.getAudioResource(data);
-    print('url-data');
-    print(mediaResource.url);
-    print(mediaResource.headers);
     if (mediaResource.headers?['#localFile'] != null) {
       realDuration = await _player.setFilePath(mediaResource.url);
     } else {

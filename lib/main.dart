@@ -10,15 +10,15 @@ import 'package:mixinmusic/pages/container.dart';
 
 checkPermission() async {
   var storageStatus = await Permission.storage.status;
-  print('权限：');
-  print(storageStatus);
   if (!storageStatus.isGranted) {
     await Permission.storage.request();
   }
 }
 
-void main() {
-  runApp(MyApp());
+main() async{
+  runApp(
+    MixinMusicApp()
+  );
   // 顶部导航栏透明
   if (Platform.isAndroid) {
     SystemUiOverlayStyle suos =
@@ -28,7 +28,7 @@ void main() {
   checkPermission();
 }
 
-class MyApp extends StatelessWidget {
+class MixinMusicApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {

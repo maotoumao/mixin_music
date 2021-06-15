@@ -79,8 +79,9 @@ class API {
 
   static Future<MediaResource> getAudioResource(MediaItem mediaItem) async {
     String? downloadPath = await AudioUtil.getDownloadAudioPath(mediaItem);
-    if(downloadPath!=null) {
-      return MediaResource(url: downloadPath, headers: {'#localFile': '#localFile'});
+    if (downloadPath != null) {
+      return MediaResource(
+          url: downloadPath, headers: {'#localFile': '#localFile'});
     }
 
     switch (mediaItem.genre) {
@@ -88,23 +89,16 @@ class API {
         {
           final String url;
           final List<String> backupUrl;
-          if (mediaItem.extras?['audioUrl'] != null) {
-            url = mediaItem.extras?['audioUrl'];
-            backupUrl = mediaItem.extras?['backupUrl'] ?? [] ;
-          } else {
-            var res = await BilibiliApi.getAudioUrl(mediaItem.extras);
-            url = res['url'];
-            backupUrl = res['backupUrl'].cast<String>();
-            mediaItem.extras?['audioUrl'] = url;
-            mediaItem.extras?['backupUrl'] = backupUrl;
-          }
+          var res = await BilibiliApi.getAudioUrl(mediaItem.extras);
+          url = res['url'];
+          backupUrl = res['backupUrl'].cast<String>();
+          final hostUrl = url.substring(url.indexOf('/') + 2);
 
           final Map<String, String> headers = {
             HttpHeaders.userAgentHeader:
                 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.90 Safari/537.36 Edg/89.0.774.63',
             HttpHeaders.acceptHeader: '*/*',
-            HttpHeaders.hostHeader: 'upos-sz-mirrorcoso1.bilivideo.com',
-            // TODO: 这里应该是根据url解析吧，先这样吧
+            HttpHeaders.hostHeader: hostUrl.substring(0, hostUrl.indexOf('/')),
             HttpHeaders.acceptEncodingHeader: 'gzip, deflate, br',
             HttpHeaders.connectionHeader: 'keep-alive',
             HttpHeaders.refererHeader: sprintf(
@@ -148,14 +142,22 @@ class API {
     path += sprintf('%s-%s-%s-%s.mp3',
         [mediaItem.title, mediaItem.artist, mediaItem.album, mediaItem.genre]);
     MediaResource mediaResource = await getAudioResource(mediaItem);
-    Fluttertoast.showToast(msg: '开始下载');
-    Dio()
-        .download(mediaResource.url, path,
-            options: Options(headers: mediaResource.headers))
-        .then((value) {
-      print(value);
-    }).whenComplete(() {
-      Fluttertoast.showToast(msg: '下载成功');
-    });
+    Fluttertoast.showToast(msg: '开始下载✌');
+    List<String> urls = [mediaResource.url, ...(mediaResource.backupUrl ?? [])];
+    for (int i = 0; i < urls.length; ++i) {
+      try {
+        print(urls[i]);
+        print(mediaResource.headers);
+        await Dio().download(urls[i], path,
+            options: Options(headers: mediaResource.headers));
+        Fluttertoast.showToast(msg: '下载成功😉');
+        return;
+      } catch (e) {
+        // retry
+        print(e);
+      }
+    }
+
+    Fluttertoast.showToast(msg: '下载失败😢');
   }
 }

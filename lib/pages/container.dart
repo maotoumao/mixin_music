@@ -25,11 +25,11 @@ class _GlobalState extends State<ContainerPage> {
   void init() async {
     Map<String, dynamic> params;
 
+    // TODO: 想让它重新打开的时候回复状态但是好像不是这么写的啊
     params = await SharedPrefHelper.restoreSongStatus();
 
     // 初始化service
     await AudioService.connect();
-
     AudioService.start(
         backgroundTaskEntrypoint: _backgroundTaskEntrypoint,
         androidNotificationChannelName: 'MixinMusic',

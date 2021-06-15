@@ -136,6 +136,9 @@ class BilibiliApi {
               'https://api.bilibili.com/x/web-interface/view?%s', [param])));
       cid = cidRes.data['data']['cid'];
     }
+
+    print('cid');
+    print(cid);
     // playurl
     Response playurlRes = await dio.fetch(RequestOptions(
         method: 'GET',

@@ -105,11 +105,24 @@ class SongItem extends StatelessWidget {
                       Label(label: mediaItem.genre as String, fontSize: 9)
                     ],
                   ),
-                  Text(
-                    sprintf('%s - %s', [mediaItem.artist ?? '', mediaItem.album]),
-                    textScaleFactor: 0.8,
-                    style: TextStyle(color: Color(0xff333333)),
-                    overflow: TextOverflow.ellipsis,
+                  Row(
+                    children: [
+                      FutureBuilder(
+                          future: AudioUtil.getDownloadAudioPath(mediaItem),
+                          builder: (context, snapshot) {
+                            if(snapshot.data != null) {
+                              return Icon(Icons.download_done_rounded);
+                            }
+                            return Container();
+                          }
+                      ),
+                      Text(
+                        sprintf('%s - %s', [mediaItem.artist ?? '', mediaItem.album]),
+                        textScaleFactor: 0.8,
+                        style: TextStyle(color: Color(0xff333333)),
+                        overflow: TextOverflow.ellipsis,
+                      )
+                    ],
                   )
                 ],
               )),
