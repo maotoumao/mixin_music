@@ -30,10 +30,12 @@ class SharedPrefHelper {
     return history;
   }
 
+
   static saveSongSheet(List songSheets) async {
     SharedPreferences sp = await SharedPreferences.getInstance();
     // 将所有歌曲转化为kv
-    List<Map> mapSheet = songSheets.map((ss) => ({
+    List<Map> mapSheet = songSheets.map((ss) =>
+    ({
       "name": ss['name'],
       "cover": ss['cover'],
       "songs": ss['songs'].map((mi) => mi.toJson()).toList()
@@ -44,31 +46,86 @@ class SharedPrefHelper {
   static Future<List> loadSongSheet() async {
     SharedPreferences sp = await SharedPreferences.getInstance();
     String? str = sp.getString('song-sheet');
-    if(str == null){
+    if (str == null) {
       return [{
         "name": "我喜欢",
         "cover": null,
         "songs": []
-      }];
+      }
+      ];
     } else {
       List mapSheet = jsonDecode(str);
       mapSheet.forEach((element) {
-        element['songs'] = element['songs'].map((m) => MediaItem.fromJson(m)).toList();
+        element['songs'] =
+            element['songs'].map((m) => MediaItem.fromJson(m)).toList();
       });
       return mapSheet;
     }
-
   }
 
-  static restoreSongStatus() async{
+  static Future<String> backupSongSheetString() async {
+    SharedPreferences sp = await SharedPreferences.getInstance();
+    String? str = sp.getString('song-sheet');
+    if (str == null) {
+      return [{
+        "name": "我喜欢",
+        "cover": null,
+        "songs": []
+      }
+      ].toString();
+    }
+    return str;
+  }
+
+  // 默认是覆盖的
+  static Future<bool> restoreSongSheetString(String str,
+      {bool appendMode = false}) async {
+    try {
+      List mapSheet;
+      if (str == '') {
+        return false;
+      } else {
+        mapSheet = jsonDecode(str);
+      }
+      mapSheet.forEach((element) {
+        element['songs'] =
+            element['songs'].map((m) => MediaItem.fromJson(m)).toList();
+      });
+
+      if (appendMode) {
+        mapSheet = [...(await loadSongSheet()), ...mapSheet];
+      } else {
+        // 是不是哪个小坏蛋把默认歌单删了
+        if (-1 == mapSheet.indexWhere((element) => element['name'] == '我喜欢')) {
+          mapSheet = [{
+            "name": "我喜欢",
+            "cover": null,
+            "songs": []
+          }, ...mapSheet];
+        }
+      }
+
+      await saveSongSheet(mapSheet);
+
+      return true;
+    }
+    catch (e) {
+      print(e);
+      return false;
+    }
+  }
+
+
+  static restoreSongStatus() async {
     // 还原歌单
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    List<String>? playQueueString = sharedPreferences.getStringList('play-queue');
+    List<String>? playQueueString = sharedPreferences.getStringList(
+        'play-queue');
     print(playQueueString);
     int playProgress = sharedPreferences.getInt('play-progress') ?? 0;
     int playIndex = sharedPreferences.getInt('play-index') ?? -1;
     List<MediaItem> playQueue = [];
-    if(playQueueString != null){
+    if (playQueueString != null) {
       playQueue.addAll(playQueueString
           .map<MediaItem>((pq) => MediaItem.fromJson(jsonDecode(pq))));
     }
@@ -80,10 +137,11 @@ class SharedPrefHelper {
     };
   }
 
-  static saveSongStatus(int playIndex, List<MediaItem> queue) async{
+  static saveSongStatus(int playIndex, List<MediaItem> queue) async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     await sharedPreferences.setInt('play-index', playIndex);
-    await sharedPreferences.setStringList('play-queue', queue.map((q) => jsonEncode(q.toJson())).toList());
+    await sharedPreferences.setStringList(
+        'play-queue', queue.map((q) => jsonEncode(q.toJson())).toList());
   }
 
 
