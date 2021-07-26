@@ -25,6 +25,14 @@ class BackgroundStack extends StatelessWidget {
             fit: BoxFit.cover,
           ),
         );
+      } else if (url.startsWith('assets:')) {
+        decoration = BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage(url.substring(7)),
+            fit: BoxFit.cover,
+          ),
+        );
+
       }
       return Stack(
         children: [

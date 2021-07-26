@@ -12,7 +12,6 @@ import 'package:mixinmusic/components/label.dart';
 import 'package:mixinmusic/utils/audio_util.dart';
 import 'package:mixinmusic/utils/common.dart';
 
-
 // 歌曲item分为两种，一种在歌单内，一种是搜索结果中的
 class SongItem extends StatelessWidget {
   final MediaItem mediaItem;
@@ -25,12 +24,20 @@ class SongItem extends StatelessWidget {
 
   showSongOperation(BuildContext context) {
     final modalItems = [
-      ModalItem(leading: Icons.playlist_add, content: '下一首播放', onTap: () async {
-        await AudioService.addQueueItem(mediaItem);
-        Navigator.pop(context);
-        Fluttertoast.showToast(msg: '已添加到下一首播放');
-      }),
-      ModalItem(leading: Icons.album, content: '复制专辑名', onTap: (){CommonUtil.copyToClipboard(mediaItem.album);}),
+      ModalItem(
+          leading: Icons.playlist_add,
+          content: '下一首播放',
+          onTap: () async {
+            await AudioService.addQueueItem(mediaItem);
+            Navigator.pop(context);
+            Fluttertoast.showToast(msg: '已添加到下一首播放');
+          }),
+      ModalItem(
+          leading: Icons.album,
+          content: '复制专辑名',
+          onTap: () {
+            CommonUtil.copyToClipboard(mediaItem.album);
+          }),
       // 添加到我喜欢
       ModalItem(
           leading: Icons.favorite,
@@ -53,26 +60,26 @@ class SongItem extends StatelessWidget {
             leading: Icons.delete,
             content: '删除',
             onTap: () {
-              BlocProvider.of<SongSheetBloc>(context)
-                  .add(RemoveSongsFromSheet(sheetIndex: sheetIndex, songs: [mediaItem]));
+              BlocProvider.of<SongSheetBloc>(context).add(RemoveSongsFromSheet(
+                  sheetIndex: sheetIndex, songs: [mediaItem]));
               Navigator.pop(context);
             }),
       ModalItem(
           leading: Icons.save_alt_rounded,
           content: '下载',
           onTap: () {
-              AudioUtil.getDownloadAudioPath(mediaItem).then((value) {
-                if(value == null) {
-                  API.downloadAudio(mediaItem);
-                } else {
-                  Fluttertoast.showToast(msg: '已经下载过啦😊');
-                }
-              });
+            AudioUtil.getDownloadAudioPath(mediaItem).then((value) {
+              if (value == null) {
+                API.downloadAudio(mediaItem);
+              } else {
+                Fluttertoast.showToast(msg: '已经下载过啦😊');
+              }
+            });
           }),
-
     ];
 
-    Modal.showModalWithMediaHeader(context, mediaItem: mediaItem, modalItems: modalItems);
+    Modal.showModalWithMediaHeader(context,
+        mediaItem: mediaItem, modalItems: modalItems);
   }
 
   @override
@@ -110,18 +117,19 @@ class SongItem extends StatelessWidget {
                       FutureBuilder(
                           future: AudioUtil.getDownloadAudioPath(mediaItem),
                           builder: (context, snapshot) {
-                            if(snapshot.data != null) {
+                            if (snapshot.data != null) {
                               return Icon(Icons.download_done_rounded);
                             }
                             return Container();
-                          }
-                      ),
-                      Text(
-                        sprintf('%s - %s', [mediaItem.artist ?? '', mediaItem.album]),
+                          }),
+                      Expanded(
+                          child: Text(
+                        sprintf('%s - %s',
+                            [mediaItem.artist ?? '', mediaItem.album]),
                         textScaleFactor: 0.8,
                         style: TextStyle(color: Color(0xff333333)),
                         overflow: TextOverflow.ellipsis,
-                      )
+                      ))
                     ],
                   )
                 ],

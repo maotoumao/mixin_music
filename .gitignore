@@ -45,5 +45,10 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# git
+/.git/
+
 # Key
 key.properties
+
+/.dart_tool/

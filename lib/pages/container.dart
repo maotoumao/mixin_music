@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mixinmusic/bloc/song_sheet/song_sheet_bloc.dart';
+import 'package:mixinmusic/components/background_stack.dart';
 import 'package:mixinmusic/utils/adaption.dart';
 import 'package:mixinmusic/components/background_image.dart';
 import 'package:mixinmusic/pages/home/home.dart';
@@ -67,9 +68,7 @@ class _GlobalState extends State<ContainerPage> {
             setState(() {});
           },
         ),
-        body: BackgroundImage(
-          url:
-              'https://gimg2.baidu.com/image_search/src=http%3A%2F%2Finews.gtimg.com%2Fnewsapp_bt%2F0%2F9955718202%2F1000.jpg&refer=http%3A%2F%2Finews.gtimg.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1619502843&t=2bef6f0ff6d9e252c9806846f28c42b2',
+        body: BackgroundStack(
           child: HomePage(),
         ));
   }
@@ -142,9 +141,7 @@ class SideDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext ctx) {
     return Drawer(
-        child: BackgroundImage(
-            url:
-                'https://gimg2.baidu.com/image_search/src=http%3A%2F%2Finews.gtimg.com%2Fnewsapp_bt%2F0%2F9955718202%2F1000.jpg&refer=http%3A%2F%2Finews.gtimg.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1619502843&t=2bef6f0ff6d9e252c9806846f28c42b2',
+        child: BackgroundStack(
             child: SingleChildScrollView(
                 child: Container(
                     margin: EdgeInsets.symmetric(vertical: 20),
@@ -176,12 +173,17 @@ class SideDrawer extends StatelessWidget {
                                 SideBarMenuItem(
                                     child: Text('使用说明'),
                                     onTap: () {
-                                      print('wtf');
+                                      launch('https://gitee.com/maotoumao/mixin_music#git-readme');
                                     }),
                                 SideBarMenuItem(
-                                    child: Text('源码链接'),
+                                    child: Text('github源码链接(求个star)'),
                                     onTap: () {
-                                      print('wtf');
+                                      launch('https://github.com/maotoumao/mixin_music');
+                                    }),
+                                SideBarMenuItem(
+                                    child: Text('gitee源码链接(求个star)'),
+                                    onTap: () {
+                                      launch('https://gitee.com/maotoumao/mixin_music');
                                     }),
                                 SideBarMenuItem(
                                     child: Text('我猜你不想点这个'),
